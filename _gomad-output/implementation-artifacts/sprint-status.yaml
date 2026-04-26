@@ -1,6 +1,6 @@
 # generated: 2026-04-26
 # last_updated: 2026-04-26
-# (auto-updated by gm-create-story for story 1-2-device-flag-and-init-abstraction)
+# (auto-updated by gm-create-story for story 1-4-attention-adapter)
 # project: InfiniteTalk
 # project_key: NOKEY
 # tracking_system: file-system
@@ -48,6 +48,10 @@ last_updated: 2026-04-26
 # 2026-04-26 Amelia (gm-dev-story): 1-3-xfuser-single-card-stub ready-for-dev → in-progress
 # 2026-04-26 Amelia (gm-dev-story): 1-3-xfuser-single-card-stub in-progress → review
 # 2026-04-26 Elon (sprint-agent Phase 4): 1-3-xfuser-single-card-stub review → done
+# 2026-04-26 Bob (gm-create-story): 1-4-attention-adapter backlog → ready-for-dev
+# 2026-04-26 Amelia (gm-dev-story): 1-4-attention-adapter ready-for-dev → in-progress
+# 2026-04-26 Amelia (gm-dev-story): 1-4-attention-adapter in-progress → review
+# 2026-04-26 Elon (sprint-agent Phase 4): 1-4-attention-adapter review → done
 project: InfiniteTalk
 project_key: NOKEY
 tracking_system: file-system
@@ -59,7 +63,7 @@ development_status:
   1-1-npu-branch-infrastructure: done
   1-2-device-flag-and-init-abstraction: done
   1-3-xfuser-single-card-stub: done
-  1-4-attention-adapter: backlog
+  1-4-attention-adapter: done
   1-5-multitalk-single-card-happy-path: backlog
   1-6-observability-signal-capture: backlog
   1-7-readme-npu-first-version: backlog

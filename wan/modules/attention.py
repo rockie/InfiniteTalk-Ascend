@@ -9,6 +9,7 @@ from xfuser.core.distributed import (
     get_sp_group,
 )
 import xformers.ops
+from wan._npu_adapter.attention_dispatch import dispatch_memory_efficient_attention
 
 try:
     import flash_attn_interface
@@ -263,7 +264,7 @@ class SingleStreamAttention(nn.Module):
             attn_bias = xformers.ops.fmha.attn_bias.BlockDiagonalMask.from_seqlens(visual_seqlen, kv_seq)
         else:
             attn_bias = None
-        x = xformers.ops.memory_efficient_attention(q, encoder_k, encoder_v, attn_bias=attn_bias, op=None,)
+        x = dispatch_memory_efficient_attention(q, encoder_k, encoder_v, attn_bias=attn_bias, op=None)
         x = rearrange(x, "B M H K -> B H M K") 
 
         # linear transform
@@ -377,7 +378,7 @@ class SingleStreamMutiAttention(SingleStreamAttention):
         q = rearrange(q, "B H M K -> B M H K")
         encoder_k = rearrange(encoder_k, "B H M K -> B M H K")
         encoder_v = rearrange(encoder_v, "B H M K -> B M H K")
-        x = xformers.ops.memory_efficient_attention(q, encoder_k, encoder_v, attn_bias=None, op=None,)
+        x = dispatch_memory_efficient_attention(q, encoder_k, encoder_v, attn_bias=None, op=None)
         x = rearrange(x, "B M H K -> B H M K")
 
         # linear transform

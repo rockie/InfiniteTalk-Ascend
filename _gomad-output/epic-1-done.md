@@ -4,6 +4,28 @@
 
 ---
 
+## 1-4-attention-adapter — attention 后端 NPU 适配（BNSD 单一路径）
+
+**Date:** 2026-04-26
+
+### Story
+为 `wan/modules/attention.py` 内的 `xformers.ops.memory_efficient_attention(...)` 两处调用（SingleStreamAttention.forward / SingleStreamMutiAttention.forward）引入 device-aware 分发：CUDA 上字符等价透传，NPU 上路由至 `torch_npu.npu_fusion_attention` BNSD 形态。BlockDiagonalMask + NPU 路径属于 multi-card SP（Phase 2），本 story 显式抛 `NotImplementedError`。
+
+### Work Done
+- 新增 `wan/_npu_adapter/attention_dispatch.py`：导出 `dispatch_memory_efficient_attention(q, k, v, attn_bias=None, op=None)`，按 `q.device.type` 分发：
+  * CUDA 分支：函数体内 `import xformers.ops`，透传 `xformers.ops.memory_efficient_attention(q, k, v, attn_bias=attn_bias, op=op)`，character-equivalent 上游（NFR-05）。
+  * NPU 分支：调用私有 `_npu_dispatch(q, k, v, attn_bias)`。先检查 `attn_bias is not None` → 抛 `NotImplementedError("BlockDiagonalMask is multi-card NPU SP path; Phase 2 scope...")`，**严格在 lazy `import torch_npu` 之前**；BNSD 路径（`attn_bias=None`）调用 `torch_npu.npu_fusion_attention(q, k, v, head_num=q.shape[-2], input_layout="BSND", scale=1/sqrt(q.shape[-1]))[0]`。
+- `wan/modules/attention.py` (+3 行 net)：1 行顶层 `from wan._npu_adapter.attention_dispatch import dispatch_memory_efficient_attention`；2 处 call-site 替换（line 267 + line 381，原 `xformers.ops.memory_efficient_attention(...)` → `dispatch_memory_efficient_attention(...)`），kwargs 完全一致。`import xformers.ops`（line 11）保留 — `BlockDiagonalMask.from_seqlens(...)`（line 264）仍需用。
+- 新增 `_gomad-output/implementation-artifacts/smoke_test_1_4_attention_dispatch.py`：4 case dry-run 烟测（无需 torch / torch_npu / xformers 安装）：CASE 1 CUDA 透传 spy；CASE 2 NPU+BNSD 路由至 mock `npu_fusion_attention`；CASE 3 CUDA dispatch 后 `not any(name.startswith('torch_npu') for name in sys.modules)`（AC-6 binding runtime evidence）；CASE 4 BlockDiagonalMask + NPU → NotImplementedError，traceback frame 锚定 `_npu_dispatch:99`，sys.modules 无 torch_npu（验证错误在 lazy import 之前抛出）。4/4 PASS。
+- 留存证据：lint EXIT=0；`wan/modules/attention.py:3` 命中 +3 target lower bound（远低 +12 hard cap）；`wan/distributed/xdit_context_parallel.py` 0/80 zero-touch（Story 1.3 binding contract）；`grep -nE "xformers\.ops\.memory_efficient_attention\(" wan/modules/attention.py` 0 行（AC-1）；`grep -nE "^import torch_npu|^from torch_npu" wan/modules/attention.py wan/_npu_adapter/attention_dispatch.py` 0 行（AC-6）。
+
+### Known Issues
+- 无遗留（0 LOW deferred）。
+- FR-06 显式收缩：本 story 仅验证 multitalk 路径（通过 SingleStreamAttention/SingleStreamMutiAttention 共享层实现）；i2v/t2v/flf2v 的 `wan/modules/model.py` 使用 `flash_attention()` 而非 xformers，无 class-specific bypass 需要消除，平凡继承 FR-06。`flash_attention` 后端的 NPU 适配延迟到 Story 1.5（real hardware）/ Epic 4。
+- NPU 数值正确性（CUDA flash_attn vs `npu_fusion_attention` BNSD 输出 tensor 等价性）属于 Story 1.5 real hardware 验证范畴；本 story 仅证明 dispatch 路由正确。
+
+---
+
 ## 1-3-xfuser-single-card-stub — xfuser 单卡桩化（短路 + 旁路）
 
 **Date:** 2026-04-26

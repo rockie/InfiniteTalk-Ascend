@@ -3,12 +3,18 @@ import torch
 import torch.nn as nn
 from einops import rearrange, repeat
 from ..utils.multitalk_utils import RotaryPositionalEmbedding1D, normalize_and_scale, split_token_counts_and_frame_ids
-from xfuser.core.distributed import (
-    get_sequence_parallel_rank,
-    get_sequence_parallel_world_size,
-    get_sp_group,
-)
-import xformers.ops
+try:
+    from xfuser.core.distributed import (
+        get_sequence_parallel_rank,
+        get_sequence_parallel_world_size,
+        get_sp_group,
+    )
+    import xformers.ops
+except ImportError:
+    get_sequence_parallel_rank = None
+    get_sequence_parallel_world_size = None
+    get_sp_group = None
+    xformers = None
 from wan._npu_adapter.attention_dispatch import dispatch_memory_efficient_attention
 
 try:

@@ -13,6 +13,13 @@ scikit-image
 loguru
 gradio>=5.0.0
 numpy>=1.23.5,<2
+einops
+librosa
+soundfile
+safetensors
+scipy
+torchvision
+Pillow
 # xfuser>=0.4.1  -> moved to requirements-cuda.txt; CUDA-only multi-card SP path.
 #                   On NPU host (single-card MVP per Story 1.3 short-circuit) it's
 #                   unreachable at runtime, and its CUDA build deps fail to install

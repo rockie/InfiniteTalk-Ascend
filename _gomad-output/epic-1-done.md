@@ -4,6 +4,27 @@
 
 ---
 
+## 1-5-multitalk-single-card-happy-path — multitalk 单卡 NPU happy path（hot-loop 适配 + J1 acceptance pivot）
+
+**Date:** 2026-04-26 (代码层 review 通过；J1 真机验收 PENDING USER ON ASCEND 910B)
+
+### Story
+`wan/multitalk.py` 内 5 处 hot-loop CUDA-only 调用（Story 1.2 binding contract 转交至此）device-aware 化：替换为 `wan/_npu_adapter/runtime.py` 的 `device_empty_cache / device_ipc_collect / device_manual_seed_all / device_synchronize` helper。本 story 是 J1 acceptance pivot — 完整 J1 命令（`python generate_infinitetalk.py --task infinitetalk-14B --device npu --input_json examples/single_example_image.json --save_file out_multitalk.mp4`）必须在 Ascend 910B 上由用户人工执行。3 信号采集（fallback ops / HBM 峰值 / wall-clock）显式归属 Story 1.6，不在本 story scope 内。
+
+### Work Done
+- 新增 `wan/_npu_adapter/runtime.py`：4 个 device-aware helper，按 `device.type` 分发 cuda / npu。`device_ipc_collect` 在 NPU 上用 `hasattr(torch.npu, "ipc_collect")` 检测 + `logger.debug("torch.npu.ipc_collect not available; skipping")`（CANN 版本兼容）。未支持 device.type 抛 `ValueError("Unsupported device.type='{x}'")`（pin to mps，不接受 cpu — cpu 是 t5_cpu offload 真实场景）。
+- `wan/multitalk.py` (+15 行 net)：5 处 hot-loop 调用替换至 helper（原 line 42/43/377/517/839 — `torch.cuda.empty_cache` / `ipc_collect` / `manual_seed_all` / `synchronize`）；module-level `_DEVICE_FOR_GC` state via `globals()['_DEVICE_FOR_GC'] = self.device`，写入紧随 `self.device = resolve_torch_device(...)` 之后（line 163），**先于** `__init__` 内 quant 路径的 `torch_gc()` 调用（line ~205）— 修复 code review HIGH-1 ordering bug，否则 quant 路径在 NPU host 上会因 cuda fallback 撞 AttributeError。`torch_gc()` 函数体保留 `_DEVICE_FOR_GC is None` 时 cuda 字面量 fallback 作为 unit-test / 非 pipeline import 安全网（NFR-05 物理保证）。15 处现存 `torch_gc()` caller 全部 zero-touch（arg-less 签名保留）。
+- 新增 `_gomad-output/implementation-artifacts/smoke_test_1_5_runtime.py`：6 case dry-run 烟测（4 cuda spies + 1 npu mock-namespace + 1 mps ValueError）。POST 检查 `not any(name.startswith('torch_npu') for name in sys.modules)` 验证 CUDA 路径 zero-pollution（NFR-05 binding runtime evidence）。6/6 PASS。
+- 留存证据：lint EXIT=0；`wan/multitalk.py:15` ≤ 16/80 hard cap；`grep -nE "^import torch_npu|^from torch_npu" wan/multitalk.py` 0 命中；`wan/distributed/xdit_context_parallel.py` 0/80 zero-touch（Story 1.3 binding contract）。
+- AC-10 HALT-and-handoff：5 box manual checklist (`examples/single_example_image.json` 顶层路径 — PM Round-1 修正 SM 路径错误)，含 cuda-host 回归预检 + J1 exit code/exit code/二次 reproducibility。
+
+### Known Issues
+- AC-1 / AC-2 / AC-3 (J1 真机跑通 + ffprobe + N=2 reproducibility) **PENDING USER VERIFICATION ON ASCEND 910B**。这是 HALT-and-handoff 设计的预期状态，不阻塞 review 闭环；用户在 NPU host 上跑完 manual checklist 后回填 evidence。
+- NFR-08 N≥3 完整 reproducibility validation 显式 deferred 至 Story 5.1。
+- 3 LOW 遗留 (`deferred-work.md` "From Story 1-5"): (1) `torch_gc()` line 45 分号串行损害可读性；(2) `globals()` 直写 module state 反模式 + 多实例覆盖脆弱性 (单卡 inference 不爆)；(3) AC-4 字面 "grep 0 行" 与 cuda fallback 字面量 narrative 落差 (Story Debug Log 已显式备案)。
+
+---
+
 ## 1-4-attention-adapter — attention 后端 NPU 适配（BNSD 单一路径）
 
 **Date:** 2026-04-26

@@ -33,14 +33,17 @@ from .utils.multitalk_utils import MomentumBuffer, adaptive_projected_guidance, 
 from src.vram_management import AutoWrappedQLinear, AutoWrappedLinear, AutoWrappedModule, enable_vram_management
 from wan.utils.utils import convert_video_to_h264, extract_specific_frames, get_video_codec
 from wan.wan_lora import WanLoraWrapper
+from wan._npu_adapter.runtime import device_empty_cache, device_ipc_collect, device_manual_seed_all, device_synchronize
 
 from safetensors.torch import load_file
 from optimum.quanto import quantize, freeze, qint8,requantize
 import optimum.quanto.nn.qlinear as qlinear
 
+_DEVICE_FOR_GC = None  # pipeline __init__ assigns via globals()
 def torch_gc():
-    torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
+    if _DEVICE_FOR_GC is None:
+        torch.cuda.empty_cache(); torch.cuda.ipc_collect(); return
+    device_empty_cache(_DEVICE_FOR_GC); device_ipc_collect(_DEVICE_FOR_GC)
 
 def to_param_dtype_fp32only(model, param_dtype):
     for module in model.modules():
@@ -157,6 +160,7 @@ class InfiniteTalkPipeline:
             raise ValueError("quant must be 'int8', 'fp8', or None(default fp32 model)")
         from wan._npu_adapter.device import resolve_torch_device
         self.device = resolve_torch_device(device, device_id)
+        globals()['_DEVICE_FOR_GC'] = self.device
         self.config = config
         self.rank = rank
         self.use_usp = use_usp
@@ -374,7 +378,7 @@ class InfiniteTalkPipeline:
                 else:
                     model.to(self.device)
         # fresh the cuda cache
-        torch.cuda.empty_cache()
+        device_empty_cache(self.device)
 
    
     def generate_infinitetalk(self,
@@ -514,7 +518,7 @@ class InfiniteTalkPipeline:
         # set random seed and init noise
         seed = seed if seed >= 0 else random.randint(0, 99999999)
         torch.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
+        device_manual_seed_all(self.device, seed)
         np.random.seed(seed)
         random.seed(seed)
         torch.backends.cudnn.deterministic = True
@@ -836,7 +840,7 @@ class InfiniteTalkPipeline:
             
             torch_gc()
             if offload_model:    
-                torch.cuda.synchronize()
+                device_synchronize(self.device)
             if dist.is_initialized():
                 dist.barrier()
         

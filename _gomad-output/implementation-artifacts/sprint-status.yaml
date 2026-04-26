@@ -40,6 +40,7 @@
 
 generated: 2026-04-26
 last_updated: 2026-04-26
+# (auto-updated by gm-create-story for story 1-5-multitalk-single-card-happy-path)
 # 2026-04-26 Amelia (gm-dev-story): 1-1-npu-branch-infrastructure ready-for-dev → in-progress → review
 # 2026-04-26 Bob (gm-create-story): 1-2-device-flag-and-init-abstraction backlog → ready-for-dev
 # 2026-04-26 Amelia (gm-dev-story): 1-2-device-flag-and-init-abstraction ready-for-dev → review
@@ -52,6 +53,10 @@ last_updated: 2026-04-26
 # 2026-04-26 Amelia (gm-dev-story): 1-4-attention-adapter ready-for-dev → in-progress
 # 2026-04-26 Amelia (gm-dev-story): 1-4-attention-adapter in-progress → review
 # 2026-04-26 Elon (sprint-agent Phase 4): 1-4-attention-adapter review → done
+# 2026-04-26 Bob (gm-create-story): 1-5-multitalk-single-card-happy-path backlog → ready-for-dev
+# 2026-04-26 Amelia (gm-dev-story): 1-5-multitalk-single-card-happy-path ready-for-dev → in-progress
+# 2026-04-26 Amelia (gm-dev-story): 1-5-multitalk-single-card-happy-path in-progress → review (AC-1/AC-2/AC-3 PENDING USER VERIFICATION ON ASCEND 910B)
+# 2026-04-26 Elon (sprint-agent Phase 4): 1-5-multitalk-single-card-happy-path review → done (code-side complete; AC-1/AC-2/AC-3 manual hardware verification on Ascend 910B remains pending — see epic-1-done.md)
 project: InfiniteTalk
 project_key: NOKEY
 tracking_system: file-system
@@ -64,7 +69,7 @@ development_status:
   1-2-device-flag-and-init-abstraction: done
   1-3-xfuser-single-card-stub: done
   1-4-attention-adapter: done
-  1-5-multitalk-single-card-happy-path: backlog
+  1-5-multitalk-single-card-happy-path: done
   1-6-observability-signal-capture: backlog
   1-7-readme-npu-first-version: backlog
   epic-1-retrospective: optional

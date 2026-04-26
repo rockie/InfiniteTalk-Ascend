@@ -1,0 +1,14 @@
+# InfiniteTalk — CUDA-only Python dependencies.
+#
+# Install AFTER `pip install -r requirements.txt` on a CUDA host.
+# These deps are unreachable on single-card NPU host per Story 1.3
+# short-circuit, and their CUDA build deps fail on aarch64 NPU hosts.
+#
+# CUDA host install order:
+#   pip install -r requirements.txt
+#   pip install -r requirements-cuda.txt
+#   pip install decord                        # standard PyPI wheel
+#
+# NPU host install order: see README-NPU.md (Story 1.7).
+
+xfuser>=0.4.1

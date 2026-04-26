@@ -27,7 +27,7 @@
 # rebase drills (Story 5.2). Bumping torch_npu requires a deliberate PR
 # touching this file plus regression evidence.
 torch==2.7.1
-torch-npu==2.7.1.post6
+torch-npu==2.7.1
 # torchvision must match torch ABI (PyTorch release matrix:
 # torch 2.7.1 -> torchvision 0.22.1). Without this pin, an unpinned
 # transitive torchvision install upgrades torch and breaks the

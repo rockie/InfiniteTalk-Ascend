@@ -4,11 +4,16 @@ from einops import rearrange
 import torch
 import torch.nn as nn
 
-from xfuser.core.distributed import (
-    get_sequence_parallel_rank,
-    get_sequence_parallel_world_size,
-    get_sp_group,
-)
+try:
+    from xfuser.core.distributed import (
+        get_sequence_parallel_rank,
+        get_sequence_parallel_world_size,
+        get_sp_group,
+    )
+except ImportError:
+    get_sequence_parallel_rank = None
+    get_sequence_parallel_world_size = None
+    get_sp_group = None
 from einops import rearrange, repeat
 from functools import lru_cache
 import imageio

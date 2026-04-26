@@ -267,7 +267,14 @@ def _parse_args():
         default=None,
         help="Quantization type, must be 'int8' or 'fp8'."
     )
-    
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="cuda",
+        choices=["cuda", "npu"],
+        help="Compute device backend. Defaults to 'cuda' for upstream compatibility (FR-01)."
+    )
+
     args = parser.parse_args()
 
     _validate_args(args)
@@ -461,8 +468,10 @@ def generate(args):
         args.offload_model = False if world_size > 1 else True
         logging.info(
             f"offload_model is not specified, set to {args.offload_model}.")
+    from wan._npu_adapter.device import set_device, assert_single_card_or_fail
+    assert_single_card_or_fail(args.device, world_size)
     if world_size > 1:
-        torch.cuda.set_device(local_rank)
+        set_device(args.device, local_rank)
         dist.init_process_group(
             backend="nccl",
             init_method="env://",
@@ -527,6 +536,7 @@ def generate(args):
         checkpoint_dir=args.ckpt_dir,
         quant_dir=args.quant_dir,
         device_id=device,
+        device=args.device,
         rank=rank,
         t5_fsdp=args.t5_fsdp,
         dit_fsdp=args.dit_fsdp, 

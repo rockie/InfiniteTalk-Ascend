@@ -230,6 +230,21 @@ def _added_lines(repo_root: Path, file_path: str) -> int:
 def main() -> int:
     repo_root = _repo_root()
 
+    # Story 1.2 Task 7 — absorb Story 1.1 LOW #1: 5 tracked paths must exist.
+    # If any tracked main-path file is renamed or deleted, the lint gate's
+    # NFR-02 invariant silently slips (an absent file diffs to 0 added lines).
+    # Fail-loudly with a clear message so reviewers cannot accidentally land
+    # a rename without an architecture-level exception.
+    for tracked in TRACKED_FILES:
+        if not (repo_root / tracked).is_file():
+            print(
+                f"[NPU LINE BUDGET] FATAL: tracked path '{tracked}' missing — "
+                "rename/delete violates NFR-02 invariant. Restore the file "
+                "or open an architecture-level exception in PR review.",
+                file=sys.stderr,
+            )
+            return 2
+
     if not _baseline_exists(repo_root):
         print(
             f"[NPU LINE BUDGET] FATAL: baseline commit {BASELINE_COMMIT} "

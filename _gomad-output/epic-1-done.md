@@ -4,6 +4,28 @@
 
 ---
 
+## 1-2-device-flag-and-init-abstraction — 设备 flag 与 init 抽象层
+
+**Date:** 2026-04-26
+
+### Story
+为 InfiniteTalk 引入 `--device {cuda,npu}` CLI flag 与设备工厂抽象层，将 NPU 适配代码集中到 `wan/_npu_adapter/`（满足 NFR-03 单组 git revert 可撤回），同时物理保证 CUDA 路径零行为变化（NFR-05），并在 `--device npu + world_size>1` 时 fail-loudly（无 NCCL 静默 fallback）。
+
+### Work Done
+- 新增 `wan/_npu_adapter/__init__.py` + `wan/_npu_adapter/device.py`：设备工厂模块，导出 `is_npu / set_device / resolve_torch_device / assert_single_card_or_fail`，集中管理 `torch_npu` lazy import；该目录是 NFR-03 NPU 适配层的物理隔离点。
+- `generate_infinitetalk.py` (+12 行)：argparse `--device {cuda,npu}` flag (default=cuda)；启动期调用 `assert_single_card_or_fail` 早于 `dist.init_process_group`，多卡 NPU 抛 `NotImplementedError("Multi-card NPU SP is Phase 2 scope")`；通过工厂调用 `set_device` 替代直接 `torch.cuda.set_device`。
+- `wan/multitalk.py` (+3 行)：把 line 157 硬编码 `torch.device(f"cuda:{device}")` 替换为通过 `resolve_torch_device(device_type, device_id)` 工厂解析，保留构造函数 `device: str = "cuda"` 默认（AC-4 显式允许）。
+- `tools/check_npu_line_budget.py`：吸收 Story 1.1 LOW #1，新增 5 主路径文件存在性 pre-check — 任一路径被重命名/删除时 EXIT=2 + 清晰错误，杜绝 lint 盲区。
+- `_gomad-output/implementation-artifacts/smoke_test_1_2_device_factory.py`：AC-10 dry-run 烟测脚本（无需 NPU 硬件），覆盖 6 个 case：argparse 默认值、CUDA/NPU set_device、torch_npu 缺失友好错误、多卡 NPU 抛错、CUDA 路径不污染 sys.modules['torch_npu']。
+- 留存证据：lint gate `EXIT=0`（generate_infinitetalk.py:12 / wan/multitalk.py:3，均远低于 80 行 cap）；`grep "^import torch_npu|^from torch_npu" generate_infinitetalk.py wan/multitalk.py` 0 命中（AC-8 物理保证 lazy import 纪律）；smoke 6/6 PASS；rename smoke EXIT=2。
+
+### Known Issues
+- **[LOW]** `wan/_npu_adapter/device.py:_import_torch_npu()` 内有冗余 `import torch` + 误导性注释；功能正确，仅可读性遗留。
+- **[LOW]** `Unsupported device '{device}'; expected one of {_VALID_DEVICES}` 错误信息渲染含元组括号；argparse choices 已前置，几乎不可达。
+- 已 append 至 `_gomad-output/implementation-artifacts/deferred-work.md` "From Story 1-2" 段。
+
+---
+
 ## 1-1-npu-branch-infrastructure — 创建 NPU 分支基础设施（requirements-npu.txt + lint gate + ignore-list）
 
 **Date:** 2026-04-26

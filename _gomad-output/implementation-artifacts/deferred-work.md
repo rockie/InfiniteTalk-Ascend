@@ -15,3 +15,9 @@
 
 > **[遗留自 1-1-npu-branch-infrastructure]**: `tools/check_npu_line_budget.py:_read_ignore_list()` 用 `line.split("#", 1)[0]` 截断 rationale 时，若文件路径自身包含字面量 `#` 字符会被错误截断。当前 5 个钉死路径无 `#`，且现实工程文件名罕见出现 `#`，此项仅为解析器健壮性遗留。 — LOW
 
+## From Story 1-2 (Device Flag and Init Abstraction)
+
+> **[遗留自 1-2-device-flag-and-init-abstraction]**: `wan/_npu_adapter/device.py:_import_torch_npu()` 内部第二行 `import torch` 实际为 no-op（torch 已在模块顶层 import，cache 命中）。让 `torch.npu` 属性出现的真实机制是 `import torch_npu` 的 monkey-patch side-effect；当前注释"再次 import torch 以确保 `torch.npu` 属性已注入（顺序敏感）"会让后续维护者误判语义。建议未来 cleanup：删除冗余的第二行 `import torch` 与误导性注释，或改写注释明确"`import torch_npu` 触发 monkey-patch；`torch.npu` 即被注入"。功能正确，无运行期影响。 — LOW
+
+> **[遗留自 1-2-device-flag-and-init-abstraction]**: `wan/_npu_adapter/device.py` 中 `set_device` / `resolve_torch_device` 的非法 device 错误信息 `f"Unsupported device '{device}'; expected one of {_VALID_DEVICES}"` 会渲染成 `expected one of ('cuda', 'npu')`（带元组括号与引号）；可读性轻微下降。argparse `choices` 已在 CLI 入口前置防御，本错误几乎不会被用户看到（仅 internal misuse 场景）。建议未来 cleanup：改为 `expected one of: cuda, npu`。 — LOW
+

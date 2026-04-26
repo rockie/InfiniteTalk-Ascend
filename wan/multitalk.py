@@ -113,6 +113,7 @@ class InfiniteTalkPipeline:
         checkpoint_dir,
         quant_dir=None,
         device_id=0,
+        device: str = "cuda",
         rank=0,
         t5_fsdp=False,
         dit_fsdp=False,
@@ -154,7 +155,8 @@ class InfiniteTalkPipeline:
         """
         if quant is not None and quant not in ("int8", "fp8"):
             raise ValueError("quant must be 'int8', 'fp8', or None(default fp32 model)")
-        self.device = torch.device(f"cuda:{device_id}")
+        from wan._npu_adapter.device import resolve_torch_device
+        self.device = resolve_torch_device(device, device_id)
         self.config = config
         self.rank = rank
         self.use_usp = use_usp

@@ -12,3 +12,4 @@
 # NPU host install order: see README-NPU.md (Story 1.7).
 
 xfuser>=0.4.1
+torchvision

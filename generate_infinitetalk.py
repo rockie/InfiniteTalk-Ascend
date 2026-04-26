@@ -20,7 +20,6 @@ import wan
 from wan.configs import SIZE_CONFIGS, SUPPORTED_SIZES, WAN_CONFIGS
 from wan.utils.utils import str2bool, is_video, split_wav_librosa
 from wan.utils.multitalk_utils import save_video_ffmpeg
-from kokoro import KPipeline
 from transformers import Wav2Vec2FeatureExtractor
 from src.audio_analysis.wav2vec2 import Wav2Vec2Model
 from wan.utils.segvideo import shot_detect
@@ -385,7 +384,8 @@ def audio_prepare_single(audio_path, sample_rate=16000):
         human_speech_array = loudness_norm(human_speech_array, sr)
         return human_speech_array
 
-def process_tts_single(text, save_dir, voice1):    
+def process_tts_single(text, save_dir, voice1):
+    from kokoro import KPipeline
     s1_sentences = []
 
     pipeline = KPipeline(lang_code='a', repo_id='weights/Kokoro-82M')
@@ -409,9 +409,10 @@ def process_tts_single(text, save_dir, voice1):
    
 
 def process_tts_multi(text, save_dir, voice1, voice2):
+    from kokoro import KPipeline
     pattern = r'\(s(\d+)\)\s*(.*?)(?=\s*\(s\d+\)|$)'
     matches = re.findall(pattern, text, re.DOTALL)
-    
+
     s1_sentences = []
     s2_sentences = []
 

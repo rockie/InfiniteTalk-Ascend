@@ -29,3 +29,5 @@
 
 > **[遗留自 1-5-multitalk-single-card-happy-path]**: AC-4 字面 "grep 0 行" 与 Task 2.2 显式规定的 `torch_gc()` 内 `if _DEVICE_FOR_GC is None:` cuda fallback 字面量调用 (`wan/multitalk.py:45`) 存在 narrative-level 矛盾。Story Debug Log References 段已显式备案该实施偏差 (NFR-05 unit-test 安全网优先)。建议未来若移除该 fallback 体改成 `assert`（在确认无 pipeline-未初始化即调用 `torch_gc()` 的路径后），则 AC-4 grep 可重新满足字面 0 行。本 review 已修复 line 204 的 quant 路径 ordering issue, 为后续移除 fallback 体打下基础。 — LOW
 
+> **[遗留自 1-5-multitalk-single-card-happy-path]**: J1 真机首次跑通暴露 install order 必须显式 — 先 `pip install -r requirements.txt`（拉 Pillow / opencv-python / diffusers 等上游 deps），再 `pip install -r requirements-npu.txt`（torch_npu）。本 story HALT checklist 只列了 `requirements-npu.txt` 漏了上游 — 用户在 NPU host (/data/supagent/digital-human) 第一次跑 J1 撞 `ModuleNotFoundError: No module named 'PIL'`。同时上游 requirements.txt 含 `xfuser>=0.4.1` 在 NPU host 可能装不上（CUDA-only deps），但 Story 1.3 短路逻辑已确保单卡路径不 import xfuser，所以可以临时注释/跳过。Story 1.7 (README-NPU.md first version) MUST 在 install 章节明确写出: (a) 安装顺序; (b) xfuser 在 NPU host 的处理建议; (c) optimum-quanto 是 quant-only 可选。 — MEDIUM (升级原因: 阻塞 Epic 1 J1 acceptance evidence collection 直到用户 manual fix)
+

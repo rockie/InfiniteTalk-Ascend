@@ -1,0 +1,30 @@
+# requirements-npu.txt — NPU-only dependency increment (PRD § FR-19)
+# ====================================================================
+#
+# Purpose
+# -------
+# This file lists dependencies that are required ONLY when running the
+# NPU code path (`--device npu`). It is consumed *in addition to* the
+# upstream `requirements.txt`, never as a replacement.
+#
+# Division of labour vs. upstream `requirements.txt`
+# --------------------------------------------------
+#   - upstream requirements.txt → all CUDA/CPU baseline deps (xfuser,
+#     diffusers, transformers, optimum-quanto, ...). DO NOT duplicate
+#     those entries here. DO NOT pin a different version of an upstream
+#     package here (NFR-05: --device cuda behaviour must stay unchanged).
+#   - this file (requirements-npu.txt) → NPU-only additions. Anything
+#     pulled in only because torch_npu / Ascend tooling needs it.
+#
+# Install order (NPU host):
+#     pip install -r requirements.txt
+#     pip install -r requirements-npu.txt
+#
+# Why an exact pin on torch_npu?
+# ------------------------------
+# PRD § FR-19 mandates an exact pin (`==`, not `>=`/`~=`) so the NPU
+# branch maintainer controls the torch_npu ABI surface explicitly across
+# rebase drills (Story 5.2). Bumping torch_npu requires a deliberate PR
+# touching this file plus regression evidence.
+
+torch_npu==2.7.1

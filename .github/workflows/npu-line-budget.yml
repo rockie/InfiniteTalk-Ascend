@@ -1,0 +1,53 @@
+# NPU Line Budget CI Gate
+# =======================
+# Enforces PRD § NFR-02: ≤80 lines added per main-path file vs the pinned
+# upstream baseline commit. This gate is one of the two consumers of
+# tools/check_npu_line_budget.py (the other being the pre-commit hook at
+# tools/pre-commit-npu-line-budget.sh) — both invoke the *same* script per
+# AC-7 (DRY: no duplicate budget logic).
+#
+# Trigger surface: every PR + every push to any branch — we want the gate to
+# guard both code-review (PR) and direct push paths.
+#
+# Failure recovery (surfaced inline because Story 1.1 intentionally does NOT
+# pre-create README-NPU.md — that's Story 1.7's deliverable):
+#   (a) Externalize the offending changes into a dedicated NPU wrapper or
+#       monkey-patch file, off the 5-file main-path list (NFR-03 dual
+#       constraint — adapter layer must be revertable as a coherent set).
+#   (b) Add the file to tools/npu-line-budget-ignore.txt with explicit
+#       rationale and obtain PR-review approval.
+#
+# IMPORTANT: fetch-depth: 0 is required so the baseline commit (pinned in
+# tools/check_npu_line_budget.py:BASELINE_COMMIT) is reachable from the
+# CI clone. A shallow clone would make `git diff baseline..HEAD` fail with a
+# "not reachable" error — the script exits 2 in that case.
+
+name: NPU Line Budget
+
+"on":
+  pull_request:
+  push:
+
+jobs:
+  npu-line-budget:
+    name: Enforce ≤80-line main-path budget vs baseline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history so baseline commit is reachable)
+        uses: actions/checkout@v4
+        with:
+          # Full history is required: the baseline commit hash pinned in
+          # tools/check_npu_line_budget.py must be reachable for `git diff
+          # <baseline>..HEAD` to succeed.
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run NPU line-budget check (shared script — see AC-7)
+        # AC-7 (DRY): this same script is invoked by the pre-commit hook at
+        # tools/pre-commit-npu-line-budget.sh. Do NOT inline a duplicate
+        # algorithm here.
+        run: python3 tools/check_npu_line_budget.py

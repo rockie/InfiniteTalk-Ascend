@@ -1,0 +1,24 @@
+# NPU Line Budget Ignore-List
+# ============================
+# Format: <file_path> # <reason>
+#
+# Each non-comment, non-empty line lists ONE file path (relative to repo root)
+# that should be excluded from the NFR-02 ≤80-line gate enforced by
+# tools/check_npu_line_budget.py.
+#
+# Rules (per Story 1.1 AC-4):
+#   - Every entry MUST carry a rationale after `#` explaining why the file is
+#     exempt (e.g. "上游已大改的 i18n 文件" or "非 NPU 主路径文件").
+#   - "为方便加进去" 不是合法理由——条目必须经 PR review 论证后再追加。
+#   - 默认（首版）此文件为空：当前 5 个主路径文件均无需 grandfather。
+#   - Lines starting with `#` and blank lines are ignored by the parser.
+#
+# When to add an entry:
+#   - 上游对该文件做了大幅重构，本 NPU 分支无法靠 ≤80 行调整跟上；
+#   - 或者该文件不属于 NPU 适配主路径，被列入 TRACKED_FILES 是历史遗留误判。
+#
+# When NOT to add an entry:
+#   - 本地适配代码"暂时超标"——应改为外置 wrapper/monkey-patch 文件（NFR-03 对偶
+#     约束）而不是绕过 gate。
+#
+# (No grandfather entries at this time.)

@@ -1,0 +1,88 @@
+# generated: 2026-04-26
+# last_updated: 2026-04-26
+# (auto-updated by gm-create-story for story 1-1-npu-branch-infrastructure)
+# project: InfiniteTalk
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_gomad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+#
+# IMPLEMENTATION ORDER (per epics.md):
+# Epic 1 → Epic 3 → Epic 2 → Epic 4 → Epic 5
+
+generated: 2026-04-26
+last_updated: 2026-04-26
+# 2026-04-26 Amelia (gm-dev-story): 1-1-npu-branch-infrastructure ready-for-dev → in-progress → review
+project: InfiniteTalk
+project_key: NOKEY
+tracking_system: file-system
+story_location: "{project-root}/_gomad-output/implementation-artifacts"
+
+development_status:
+  # Epic 1: NPU 启动与单卡 multitalk Walking Skeleton (Phase 1a 核心)
+  epic-1: in-progress
+  1-1-npu-branch-infrastructure: done
+  1-2-device-flag-and-init-abstraction: backlog
+  1-3-xfuser-single-card-stub: backlog
+  1-4-attention-adapter: backlog
+  1-5-multitalk-single-card-happy-path: backlog
+  1-6-observability-signal-capture: backlog
+  1-7-readme-npu-first-version: backlog
+  epic-1-retrospective: optional
+
+  # Epic 3: Gradio Demo NPU 化 (Phase 1a 末) — 实施顺序优先于 Epic 2
+  epic-3: backlog
+  3-1-app-py-device-flag: backlog
+  3-2-gradio-multitalk-end-to-end: backlog
+  epic-3-retrospective: optional
+
+  # Epic 2: Vendor Escalation Workflow + Error Diagnostics (Phase 1a 横切)
+  epic-2: backlog
+  2-1-npu-error-code-translation: backlog
+  2-2-escalation-packet-generation: backlog
+  2-3-known-issues-tracking-dogfood: backlog
+  epic-2-retrospective: optional
+
+  # Epic 4: 三模式扩展 + CLI 分发 (Phase 1b 主体)
+  epic-4: backlog
+  4-1-c12-cli-dispatch-decision: backlog
+  4-2-i2v-mode-npu: backlog
+  4-3-t2v-mode-npu: backlog
+  4-4-flf2v-mode-npu: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: MVP 收尾（Upstream Sync Drill + Compatibility 验证 + 文档最终化）
+  epic-5: backlog
+  5-1-cross-platform-validation-gate: backlog
+  5-2-upstream-sync-drill: backlog
+  5-3-documentation-closure: backlog
+  5-4-acceptance-trail: backlog
+  epic-5-retrospective: optional

@@ -26,5 +26,5 @@
 # branch maintainer controls the torch_npu ABI surface explicitly across
 # rebase drills (Story 5.2). Bumping torch_npu requires a deliberate PR
 # touching this file plus regression evidence.
-
-torch_npu==2.7.1
+torch==2.7.1
+torch-npu==2.7.1.post6

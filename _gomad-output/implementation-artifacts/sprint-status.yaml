@@ -44,6 +44,10 @@ last_updated: 2026-04-26
 # 2026-04-26 Bob (gm-create-story): 1-2-device-flag-and-init-abstraction backlog → ready-for-dev
 # 2026-04-26 Amelia (gm-dev-story): 1-2-device-flag-and-init-abstraction ready-for-dev → review
 # 2026-04-26 Elon (sprint-agent Phase 4): 1-2-device-flag-and-init-abstraction review → done
+# 2026-04-26 Bob (gm-create-story): 1-3-xfuser-single-card-stub backlog → ready-for-dev
+# 2026-04-26 Amelia (gm-dev-story): 1-3-xfuser-single-card-stub ready-for-dev → in-progress
+# 2026-04-26 Amelia (gm-dev-story): 1-3-xfuser-single-card-stub in-progress → review
+# 2026-04-26 Elon (sprint-agent Phase 4): 1-3-xfuser-single-card-stub review → done
 project: InfiniteTalk
 project_key: NOKEY
 tracking_system: file-system
@@ -54,7 +58,7 @@ development_status:
   epic-1: in-progress
   1-1-npu-branch-infrastructure: done
   1-2-device-flag-and-init-abstraction: done
-  1-3-xfuser-single-card-stub: backlog
+  1-3-xfuser-single-card-stub: done
   1-4-attention-adapter: backlog
   1-5-multitalk-single-card-happy-path: backlog
   1-6-observability-signal-capture: backlog

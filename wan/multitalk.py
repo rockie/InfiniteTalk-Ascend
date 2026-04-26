@@ -249,7 +249,9 @@ class InfiniteTalkPipeline:
 
         if t5_fsdp or dit_fsdp or use_usp:
             init_on_cpu = False
-        if use_usp:
+        from wan._npu_adapter.xfuser_stub import should_short_circuit_xfuser
+        _world_size = dist.get_world_size() if dist.is_initialized() else 1
+        if use_usp and not should_short_circuit_xfuser(_world_size):
             from xfuser.core.distributed import get_sequence_parallel_world_size
 
             from .distributed.xdit_context_parallel import (

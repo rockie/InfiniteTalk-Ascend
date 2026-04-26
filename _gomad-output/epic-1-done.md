@@ -4,6 +4,26 @@
 
 ---
 
+## 1-3-xfuser-single-card-stub — xfuser 单卡桩化（短路 + 旁路）
+
+**Date:** 2026-04-26
+
+### Story
+为 InfiniteTalk 单卡（`world_size==1`）路径短路 xfuser 上下文并行依赖：让 `wan/multitalk.py` 的 `if use_usp:` 分支在单卡时不进入，从而完全规避 `wan/distributed/xdit_context_parallel.py` 的 xfuser top-level imports；同时保留多卡 CUDA 路径与上游字符等价（NFR-05），且所有适配代码集中在 `wan/_npu_adapter/`（NFR-03 单组 git revert 可撤回）。
+
+### Work Done
+- 新增 `wan/_npu_adapter/xfuser_stub.py`：导出 2 个公共 helper：
+  - `should_short_circuit_xfuser(world_size: int) -> bool`：纯判定，`world_size <= 1` 返回 True，无副作用、无 xfuser import。
+  - `get_sequence_parallel_world_size_safe(world_size: int) -> int`：单卡返回 1（不 import xfuser）；多卡 lazy import `xfuser.core.distributed.get_sequence_parallel_world_size` 后透明 passthrough。
+- `wan/multitalk.py` (+3 行)：把 `if use_usp:` 改为 `if use_usp and not should_short_circuit_xfuser(_world_size):`；`_world_size = dist.get_world_size() if dist.is_initialized() else 1`（不读 `os.getenv`）；新增 `from wan._npu_adapter.xfuser_stub import …` 在方法体内 lazy。AC-3 物理保证 `use_usp` token 仍是顶层 conjunct，short-circuit 是追加的 `and` term 而非替换。
+- 新增 `_gomad-output/implementation-artifacts/smoke_test_1_3_xfuser_stub.py`：5 case dry-run 烟测（无需 xfuser/torch 安装），覆盖 short-circuit True/False、单卡 sys.modules 不污染（AC-1 bright-line 验证 `not any(name.startswith('xfuser') for name in sys.modules)`）、xfuser-absent ImportError 归属、xfuser-present-dist-not-initialized passthrough — 5/5 PASS。
+- 留存证据：lint EXIT=0（wan/multitalk.py:6 = Story 1.2 +3 + Story 1.3 +3，命中 +3 lower target，远低 +5 hard cap）；wan/distributed/xdit_context_parallel.py 0/80 zero-touch；`grep "^import xfuser\|^from xfuser" wan/multitalk.py` 0 命中（AC-6 lazy-import 纪律）。
+
+### Known Issues
+- 无遗留（0 LOW deferred）。
+
+---
+
 ## 1-2-device-flag-and-init-abstraction — 设备 flag 与 init 抽象层
 
 **Date:** 2026-04-26

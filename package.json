@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@xgent-ai/gomad": "file:../gomad/xgent-ai-gomad-1.2.0.tgz"
+  }
+}

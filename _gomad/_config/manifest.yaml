@@ -1,0 +1,29 @@
+installation:
+  version: 1.2.0
+  installDate: 2026-04-25T07:25:08.783Z
+  lastUpdated: 2026-04-25T07:25:08.892Z
+modules:
+  - name: core
+    version: 1.2.0
+    installDate: 2026-04-25T07:25:08.631Z
+    lastUpdated: 2026-04-25T07:25:08.892Z
+    source: built-in
+    npmPackage: null
+    repoUrl: null
+  - name: agile
+    version: null
+    installDate: 2026-04-25T07:25:08.737Z
+    lastUpdated: 2026-04-25T07:25:08.892Z
+    source: unknown
+    npmPackage: null
+    repoUrl: null
+  - name: gomad
+    version: 1.2.0
+    installDate: 2026-04-25T07:25:08.783Z
+    lastUpdated: 2026-04-25T07:25:08.892Z
+    source: built-in
+    npmPackage: null
+    repoUrl: null
+customModules: []
+ides:
+  - claude-code

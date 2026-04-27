@@ -242,6 +242,10 @@ class InfiniteTalkPipeline:
         self.model.eval().requires_grad_(False)
         
         to_param_dtype_fp32only(self.model, self.param_dtype)
+        if hasattr(self.model, 'time_embedding'):
+            self.model.time_embedding = self.model.time_embedding.float()
+        if hasattr(self.model, 'time_projection'):
+            self.model.time_projection = self.model.time_projection.float()
         if lora_dir is not None and quant is None :
             lora_wrapper = WanLoraWrapper(self.model)
             for lora_path, lora_scale in zip(lora_dir, lora_scales):

@@ -544,7 +544,7 @@ class WanModel(ModelMixin, ConfigMixin):
         # initialize weights
         if weight_init:
             self.init_weights()
-            
+
     def init_freqs(self):
         d = self.dim // self.num_heads
         self.freqs = torch.cat([

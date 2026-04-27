@@ -46,8 +46,13 @@ ASPECT_RATIO_960 = {
 
 
 def torch_gc():
-    torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+    elif hasattr(torch, "npu") and torch.npu.is_available():
+        torch.npu.empty_cache()
+        if hasattr(torch.npu, "ipc_collect"):
+            torch.npu.ipc_collect()
 
 
 

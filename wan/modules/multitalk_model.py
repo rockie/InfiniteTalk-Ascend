@@ -3,7 +3,7 @@ import math
 import numpy as np
 import os
 import torch
-import torch.cuda.amp as amp
+from wan._npu_adapter import amp_shim as amp
 import torch.nn as nn
 import torch.nn.functional as F
 

@@ -2,7 +2,7 @@
 import math
 
 import torch
-import torch.cuda.amp as amp
+from wan._npu_adapter import amp_shim as amp
 import torch.nn as nn
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 from diffusers.models.modeling_utils import ModelMixin

@@ -67,6 +67,19 @@ def flash_attention(
     """
     half_dtypes = (torch.float16, torch.bfloat16)
     assert dtype in half_dtypes
+
+    # NPU / non-CUDA / no-flash_attn fallback: SDPA (torch_npu patches the
+    # native fused-attention path so this works on Ascend; CUDA hosts that
+    # actually have flash_attn installed continue down the original path).
+    if q.device.type != 'cuda' or not (FLASH_ATTN_2_AVAILABLE or FLASH_ATTN_3_AVAILABLE):
+        out_dtype = q.dtype
+        q_t = q.transpose(1, 2).to(dtype)
+        k_t = k.transpose(1, 2).to(dtype)
+        v_t = v.transpose(1, 2).to(dtype)
+        out = torch.nn.functional.scaled_dot_product_attention(
+            q_t, k_t, v_t, attn_mask=None, is_causal=causal, dropout_p=dropout_p)
+        return out.transpose(1, 2).contiguous().to(out_dtype)
+
     assert q.device.type == 'cuda' and q.size(-1) <= 256
 
     # params

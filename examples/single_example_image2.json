@@ -1,0 +1,7 @@
+{
+    "prompt": "A man is doing a presentation talk.",
+    "cond_video": "examples/enterprise/avatar.png",
+    "cond_audio": {
+        "person1": "examples/enterprise/male_gentle.wav"
+    }
+}

@@ -57,6 +57,7 @@ last_updated: 2026-04-26
 # 2026-04-26 Amelia (gm-dev-story): 1-5-multitalk-single-card-happy-path ready-for-dev → in-progress
 # 2026-04-26 Amelia (gm-dev-story): 1-5-multitalk-single-card-happy-path in-progress → review (AC-1/AC-2/AC-3 PENDING USER VERIFICATION ON ASCEND 910B)
 # 2026-04-26 Elon (sprint-agent Phase 4): 1-5-multitalk-single-card-happy-path review → done (code-side complete; AC-1/AC-2/AC-3 manual hardware verification on Ascend 910B remains pending — see epic-1-done.md)
+# 2026-04-28 Rockie (NPU host real-run): 1-5-multitalk-single-card-happy-path J1 acceptance CLOSED — Wan2.1-I2V-14B-720P + InfiniteTalk single addon, --size infinitetalk-480 / --sample_steps 4 / --num_persistent_param_in_dit 0, ASCEND_RT_VISIBLE_DEVICES=2, PYTORCH_NPU_ALLOC_CONF=max_split_size_mb:512, exit=0, video file generated.
 project: InfiniteTalk
 project_key: NOKEY
 tracking_system: file-system

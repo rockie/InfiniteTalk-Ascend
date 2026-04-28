@@ -18,8 +18,19 @@
 - 留存证据：lint EXIT=0；`wan/multitalk.py:15` ≤ 16/80 hard cap；`grep -nE "^import torch_npu|^from torch_npu" wan/multitalk.py` 0 命中；`wan/distributed/xdit_context_parallel.py` 0/80 zero-touch（Story 1.3 binding contract）。
 - AC-10 HALT-and-handoff：5 box manual checklist (`examples/single_example_image.json` 顶层路径 — PM Round-1 修正 SM 路径错误)，含 cuda-host 回归预检 + J1 exit code/exit code/二次 reproducibility。
 
+### J1 Acceptance Evidence (Real Hardware, 2026-04-28)
+- **Host**: `/data/supagent/digital-human` on Ascend 910B (8x NPU 910B2, 64GB HBM each, CANN 24.1.0.3)
+- **Selected**: NPU 2 (`ASCEND_RT_VISIBLE_DEVICES=2`)
+- **Command**: `python generate_infinitetalk.py --device npu --ckpt_dir weights/Wan-AI/Wan2.1-I2V-14B-720P --wav2vec_dir weights/TencentGameMate/chinese-wav2vec2-base --infinitetalk_dir weights/MeiGen-AI/InfiniteTalk/single/infinitetalk.safetensors --input_json examples/single_example_image.json --size infinitetalk-480 --sample_steps 4 --mode streaming --motion_frame 9 --num_persistent_param_in_dit 0 --save_file out_multitalk.mp4`
+- **HBM allocator tuning**: `PYTORCH_NPU_ALLOC_CONF=max_split_size_mb:512` (mitigates fragmentation on tight HBM)
+- **Result**: `Saving generated video to out_multitalk.mp4.mp4` + `Finished.`, exit=0, video file generated.
+- **NFR-08 N≥3 reproducibility full validation** still deferred to Story 5.1 per original design.
+
 ### Known Issues
-- AC-1 / AC-2 / AC-3 (J1 真机跑通 + ffprobe + N=2 reproducibility) **PENDING USER VERIFICATION ON ASCEND 910B**。这是 HALT-and-handoff 设计的预期状态，不阻塞 review 闭环；用户在 NPU host 上跑完 manual checklist 后回填 evidence。
+- N=2 reproducibility validation per AC-3 not yet run on real hardware (recommended manual follow-up; JSON of step-2 stdout to be appended to this section if user runs).
+- First successful run used reduced parameters (480 size / 4 steps) for HBM headroom; production-grade run at 720 size / 40 steps deferred (likely needs `--quant int8` or HBM-larger NPU device).
+- `--save_file` upstream bug: doubled `.mp4` extension in output filename (cosmetic; deferred-work).
+- 30+ fixes applied during real-hardware bring-up — see commits 79d8ed5..6bf3127 (Story 1.5 + cross-cutting NPU adapter polish). Pattern: cuda-only assumption purges in non-tracked files (multitalk_utils torch_gc, attention.py xfuser/xformers try/except, clip.py autocast, t5.py default arg, multitalk_model amp_shim, time_embedding fp32 promotion, flash_attention SDPA fallback, kokoro/misaki lazy import, decord aarch64 source-build, torch/torchvision ABI pin, requirements.txt split for cuda-only deps, wav2vec2 strict-API output_attentions removal). Story 1-7 README-NPU.md must consolidate the install + runtime checklist for the next NPU host operator so they don't redo the full whack-a-mole.
 - NFR-08 N≥3 完整 reproducibility validation 显式 deferred 至 Story 5.1。
 - 3 LOW 遗留 (`deferred-work.md` "From Story 1-5"): (1) `torch_gc()` line 45 分号串行损害可读性；(2) `globals()` 直写 module state 反模式 + 多实例覆盖脆弱性 (单卡 inference 不爆)；(3) AC-4 字面 "grep 0 行" 与 cuda fallback 字面量 narrative 落差 (Story Debug Log 已显式备案)。
 
